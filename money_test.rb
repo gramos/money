@@ -6,6 +6,10 @@ class Money
     @currency = currency
   end
 
+  def inspect
+    "#{"%0.2f" % @amount} #{@currency}"
+  end
+
   def self.configure
   end
 end
@@ -21,6 +25,8 @@ end
 test "Instance a new money obj" do
   fifty_eur = Money.new(50, 'EUR')
 
-  assert 50 == fifty_eur.amount
+  assert 50          == fifty_eur.amount
+  assert 'EUR'       == fifty_eur.currency
+  assert "50.00 EUR" == fifty_eur.inspect
 end
 
