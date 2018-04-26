@@ -23,6 +23,8 @@ class Money
   end
 
   def convert_to(currency)
+    return Money.new(self.amount, currency) if currency == self.currency
+
     if currency == self.class.config.default_currency
       new_amount = ( amount / self.class.config.conversions[ self.currency ] ).round(2)
     else
@@ -49,6 +51,30 @@ class Money
 
   def *(number)
     Money.new( (self.amount * number ), self.currency)
+  end
+
+  def ==(money)
+    if self.currency == money.currency
+      return self.amount == money.amount
+    else
+      return self.convert_to(Money.config.default_currency) == money.convert_to(Money.config.default_currency)
+    end
+  end
+
+  def >(money)
+    if money.currency == self.currency
+      return self.amount > money.amount
+    else
+      return self.convert_to(Money.config.default_currency).amount > money.convert_to(Money.config.default_currency).amount
+    end
+  end
+
+  def <(money)
+    if money.currency == self.currency
+      return self.amount > money.amount
+    else
+      return self.convert_to(Money.config.default_currency).amount < money.convert_to(Money.config.default_currency).amount
+    end
   end
 end
 
@@ -88,4 +114,19 @@ test "Arithmetic operations" do
   assert '31.98 EUR' == ( fifty_eur - twenty_dollars ).inspect
   assert '25.00 EUR' == ( fifty_eur / 2 ).inspect
   assert '60.00 USD' == ( twenty_dollars * 3).inspect
+end
+
+test 'Comparisons' do
+  twenty_dollars = Money.new(20, 'USD')
+  assert twenty_dollars == Money.new(20, 'USD')
+
+  assert !( twenty_dollars == Money.new(30, 'USD'))
+
+  fifty_eur               = Money.new(50, 'EUR')
+  fifty_eur_in_usd        = fifty_eur.convert_to('USD')
+
+  assert fifty_eur_in_usd == fifty_eur
+
+  assert twenty_dollars > Money.new(5, 'USD')
+  assert twenty_dollars < fifty_eur
 end
