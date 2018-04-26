@@ -23,8 +23,21 @@ class Money
   end
 
   def convert_to(currency)
-    ( amount * self.class.config.conversions[currency] ).round(2)
+    if currency == self.class.config.default_currency
+      new_amount = ( amount / self.class.config.conversions[ self.currency ] ).round(2)
+    else
+      new_amount = ( amount * self.class.config.conversions[currency] ).round(2)
+    end
+
+    Money.new(new_amount, currency)
   end
+
+  def +(money)
+    total = self.amount + ( money.convert_to('EUR') )
+
+    Money.new('EUR', total)
+  end
+
 end
 
 Money.configure do |config|
@@ -50,5 +63,14 @@ end
 
 test "Money#convert_to" do
   fifty_eur = Money.new(50, 'EUR')
-  assert 55.50 == fifty_eur.convert_to('USD')
+  assert '55.50 USD' == fifty_eur.convert_to('USD').inspect
+
+  assert '50.00 EUR' == fifty_eur.convert_to('USD').convert_to('EUR').inspect
 end
+
+# test "Arithmetic operations" do
+#   fifty_eur      = Money.new(50, 'EUR')
+#   twenty_dollars = Money.new(20, 'USD')
+
+#   assert '68.02 EUR' == ( fifty_eur + twenty_dollars ).inspect
+# end
