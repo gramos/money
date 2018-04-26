@@ -33,11 +33,23 @@ class Money
   end
 
   def +(money)
-    total = self.amount + ( money.convert_to('EUR') )
+    total = self.amount + money.convert_to(self.currency).amount
 
-    Money.new('EUR', total)
+    Money.new(total, self.currency)
   end
 
+  def -(money)
+    total = self.amount - money.convert_to(self.currency).amount
+    Money.new(total, self.currency)
+  end
+
+  def /(number)
+    Money.new( (self.amount / number ), self.currency)
+  end
+
+  def *(number)
+    Money.new( (self.amount * number ), self.currency)
+  end
 end
 
 Money.configure do |config|
@@ -68,9 +80,12 @@ test "Money#convert_to" do
   assert '50.00 EUR' == fifty_eur.convert_to('USD').convert_to('EUR').inspect
 end
 
-# test "Arithmetic operations" do
-#   fifty_eur      = Money.new(50, 'EUR')
-#   twenty_dollars = Money.new(20, 'USD')
+test "Arithmetic operations" do
+  fifty_eur      = Money.new(50, 'EUR')
+  twenty_dollars = Money.new(20, 'USD')
 
-#   assert '68.02 EUR' == ( fifty_eur + twenty_dollars ).inspect
-# end
+  assert '68.02 EUR' == ( fifty_eur + twenty_dollars ).inspect
+  assert '31.98 EUR' == ( fifty_eur - twenty_dollars ).inspect
+  assert '25.00 EUR' == ( fifty_eur / 2 ).inspect
+  assert '60.00 USD' == ( twenty_dollars * 3).inspect
+end
